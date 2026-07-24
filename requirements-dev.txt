@@ -1,0 +1,7 @@
+# Development tooling (formatting + linting). Not required to use the library.
+# Install with:  pip install -r requirements-dev.txt
+# Config for all three lives in pyproject.toml so VSCode, Claude Code, and CI agree.
+black==26.5.1
+isort==8.0.1
+pylint==4.0.6
+pre-commit==4.6.0

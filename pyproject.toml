@@ -1,0 +1,52 @@
+# This repo is intentionally NOT a pip-installable package: the modules live flat
+# under src/ and are read top to bottom (see README). This file therefore carries
+# only the formatter/linter config - the single source of truth shared by the CLI,
+# your editor, and CI, so formatting and lint behave identically everywhere.
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.pylint.main]
+# The modules import each other by bare name (`import model`), so put src/ on the
+# path before pylint resolves imports - mirrors the test conftest and the runtime
+# `cd src && python train.py` entrypoint.
+init-hook = 'import sys; sys.path.insert(0, "src")'
+
+[tool.pylint.typecheck]
+# Let pylint resolve dynamically-generated members (e.g. torch/numpy) instead of
+# emitting false-positive no-member (E1101) errors.
+generated-members = ["torch.*", "numpy.*"]
+
+[tool.pylint."messages control"]
+disable = [
+    "C0111",  # missing-docstring
+    "C0103",  # invalid-name
+    "W0102",  # dangerous-default-value
+    "R0913",  # too-many-arguments
+    "R0914",  # too-many-locals
+    "W0703",  # broad-except
+    "C0200",  # consider-using-enumerate
+    "R1705",  # no-else-return
+    "R0902",  # too-many-instance-attributes
+    "W0511",  # fixme (TODO/FIXME comments)
+    "R0903",  # too-few-public-methods
+    "R0911",  # too-many-return-statements
+    "R0912",  # too-many-branches
+    "W0603",  # global-statement
+    "W1203",  # logging-fstring-interpolation
+    "W0223",  # abstract-method - false positive on torch nn.Module subclasses
+              #                    that expose split towers instead of forward()
+    "R0917",  # too-many-positional-arguments - same spirit as R0913 (disabled above)
+    "R0801",  # duplicate-code - train.py and rerank_train.py deliberately repeat small
+              #                   readable boilerplate (the DataLoader setup) rather than
+              #                   share a helper; readability over DRY is the house style.
+]

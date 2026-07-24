@@ -1,0 +1,28 @@
+# Data & artifacts (large / downloadable - never commit)
+/data/
+checkpoints/
+*.faiss
+*.index
+wandb/
+runs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Secrets / env
+.env
+*.key
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

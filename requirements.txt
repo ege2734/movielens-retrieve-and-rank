@@ -1,0 +1,7 @@
+# Core - the whole slice runs on these three.
+torch>=2.2
+numpy
+pandas
+
+# Retrieval is exact in-memory kNN (a GPU matmul + topk) - no index library needed.
+# Download uses the standard library (urllib); no extra data-access deps.
