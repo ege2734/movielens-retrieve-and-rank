@@ -7,7 +7,9 @@ This is a repo for a humble retrieval & ranking solution for the [MovieLens-32M]
 - Two-Tower retrieval + cross-encoder reranker, all in pytorch.
 - Approach is very basic, and training is suboptimal. See [Future Work](#future-work) below.
 
-Results:
+## Results
+
+Based on sampled, held out users. See [Validation](#validation) for more.
 
 | stage | recall@10 | recall@20 | nDCG@20 |
 |---|---|---|---|
@@ -40,17 +42,16 @@ Areas for improvement:
 
 - Add memorized sparse item features on item tower, also based on user interactions.
 - Add an overarch at the end, and predict user rating.
-- Use JaggedKeyedTensors to drastically speed up training. Currently takes ~1 hour, realistically should be O(minutes).
+- Use JaggedKeyedTensors to drastically speed up training. Currently takes ~1.5 hour, realistically should be O(minutes).
 
 ### Ranking
 
-Vanilla cross-encoder, attending to dense+sparse features.
+Late interaction cross-encoder, just sparse features.
 
 Areas for improvement:
 
-- Train on the full dataset, independently from retrieval. Training on just retrieved results is dumb, limits performance, and one of the primary reasons it provides little/no lift from retrieval.
 - Try [Wukong](https://arxiv.org/pdf/2403.02545) and similar for better scale/order of interactions. Also just fun to try other architectures.
-- Train using true ratings (see above).
+- Train using true ratings (see [Validation](#validation)).
 
 ### Training
 
@@ -59,7 +60,7 @@ Areas for improvement:
   filter** on users.
 - **Causal, no leakage.** A training example pools a user's history *strictly before* the
   target movie, so the model never sees the answer in its own inputs.
-- **In-batch softmax with logQ correction.** doubled retrieval's recall because we were using popular media disproportionately as negatives in-batch.
+- **In-batch softmax with logQ correction.** Doubled retrieval's recall because we were using popular media disproportionately as negatives in-batch.
 - **Two-stage.** The reranker is a late-interaction cross-encoder trained with the *same*
   in-batch softmax against a **frozen** tower, then its score is fused with the tower's
   (`z-normalize each per user, tower + β·cross`, β ≈ 0.5). It reranks the tower's top-100.
@@ -74,8 +75,7 @@ This validation approach is subpar because:
 3. **"Rating ≥ 4 = positive" is a crude label.** Better approach is to predict ratings instead.
 4. **The reranker is evaluated on a sample of held-out users, not all of them**, so its
    numbers carry more sampling noise than the retriever's.
-5. **Minimal tuning, single seed.** Hyperparameters were tuned informally against this same
-   eval signal (a mild optimistic bias), results are from a single run/seed with no
+5. **Minimal tuning, single seed.** Hyperparameters were tuned informally against this same eval signal (a mild optimistic bias), results are from a single run/seed with no
    confidence intervals, and there is no separate held-out *test* set kept untouched from
    tuning - the reported split doubles as both dev and test.
 
@@ -85,7 +85,7 @@ Some fun things to try:
 
 - See areas for improvement under [Retrieval](#retrieval), [Ranking](#ranking) and [Validation](#validation).
 - Overkill, but use [Silvertorch](https://engineering.fb.com/2026/05/26/ml-applications/silvertorch-index-as-model-new-retrieval-paradigm-recommendation-systems/) and benchmark speed.
-- Use [Generative Recommenders](https://engineering.fb.com/2025/11/10/ml-applications/metas-generative-ads-model-gem-the-central-brain-accelerating-ads-recommendation-ai-innovation/), which would combine the retrieval+ranking stage. Would work nicely here given its a static dataset and doesn't carry much of the cold start concerns.
+- Use [Generative Recommenders](https://arxiv.org/pdf/2402.17152), which would combine the retrieval+ranking stage. Would work nicely here given it's a static dataset and doesn't carry much of the cold start concerns.
 - Analyze "time to good recommendation", i.e. how many ratings before we get to a "decent" precision/recall for a user, a key problem in production recommender systems.
 
 ## Repository layout
